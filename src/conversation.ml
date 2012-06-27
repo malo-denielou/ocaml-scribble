@@ -199,21 +199,65 @@ let local_conversion (g:as_local_protocol_body) =
 let localnodetoAST t = 
   let ii = Common.bogusInfo in
   let x n = "x" ^ (string_of_int n) in
-  let rec aux nl = function
-    | TEnd n -> LASEnd
-    | TGoto n -> if List.mem n nl then LASCont(ii,x n) else LASEnd
-    | TSend (n,(op,payload),r2,TEnd n') -> LASSend (ii,(op,payload),r2)
+  let rec check_rec nl = function
+    | TEnd n -> []
+    | TGoto n -> if List.mem n nl then [n] else []
+    | TSend (n,(op,payload),r2,TEnd n') -> []
     | TSend (n,(op,payload),r2,t) -> 
-        LASSeq (LASSend (ii,(op,payload),r2),aux (n::nl) t)
-    | TRecv (n,(op,payload),r1,TEnd n') -> LASRecv (ii,(op,payload),r1)
+      check_rec (n::nl) t
+    | TRecv (n,(op,payload),r1,TEnd n') -> []
     | TRecv (n,(op,payload),r1,t) -> 
-        LASSeq (LASRecv (ii,(op,payload),r1),aux (n::nl) t)
-    | TPar (n,lt,TEnd n') -> LASPar (ii,List.map (aux (n::nl)) lt)
-    | TPar (n,lt,t) -> LASSeq (LASPar (ii,List.map (aux (n::nl)) lt),aux (n::nl) t)
-    | TChoice (n,r,lt,TEnd n') -> LASChoice (ii,r,List.map (aux (n::nl)) lt)
-    | TChoice (n,r,lt,t) -> LASSeq (LASChoice (ii,r,List.map (aux (n::nl)) lt),aux (n::nl) t)
-    | TNop (n,t) -> aux (n::nl) t
-    | TJoin (n,t) -> aux (n::nl) t
-    | TMerge (n,t) -> aux (n::nl) t
+      check_rec (n::nl) t
+    | TPar (n,lt,TEnd n') -> List.flatten (List.map (check_rec (n::nl)) lt)
+    | TPar (n,lt,t) -> 
+      List.flatten (List.map (check_rec (n::nl)) lt) @ (check_rec (n::nl) t)
+    | TChoice (n,r,lt,TEnd n') -> 
+      List.flatten (List.map (check_rec (n::nl)) lt)
+    | TChoice (n,r,lt,t) -> 
+      List.flatten (List.map (check_rec (n::nl)) lt) @ (check_rec (n::nl) t)
+    | TNop (n,t) -> check_rec (n::nl) t
+    | TJoin (n,t) -> check_rec (n::nl) t
+    | TMerge (n,t) -> check_rec (n::nl) t
+  in
+  let rec aux nl tt = 
+    match tt with
+      | TEnd n -> LASEnd
+      | TGoto n -> if List.mem n nl then LASCont(ii,x n) else LASEnd
+      | TSend (n,(op,payload),r2,TEnd n') -> 
+        LASSend (ii,(op,payload),r2)
+      | TSend (n,(op,payload),r2,t) -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,(LASSeq (LASSend (ii,(op,payload),r2),aux (n::nl) t)))
+        else LASSeq (LASSend (ii,(op,payload),r2),aux (n::nl) t)
+      | TRecv (n,(op,payload),r1,TEnd n') -> LASRecv (ii,(op,payload),r1)
+      | TRecv (n,(op,payload),r1,t) ->
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,(LASSeq (LASRecv (ii,(op,payload),r1),aux (n::nl) t)))
+        else LASSeq (LASRecv (ii,(op,payload),r1),aux (n::nl) t)
+      | TPar (n,lt,TEnd n') -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,(LASPar (ii,List.map (aux (n::nl)) lt)))
+        else LASPar (ii,List.map (aux (n::nl)) lt)
+      | TPar (n,lt,t) -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,(LASSeq (LASPar (ii,List.map (aux (n::nl)) lt),aux (n::nl) t)))
+        else LASSeq (LASPar (ii,List.map (aux (n::nl)) lt),aux (n::nl) t)
+      | TChoice (n,r,lt,TEnd n') -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,(LASChoice (ii,r,List.map (aux (n::nl)) lt)))
+        else LASChoice (ii,r,List.map (aux (n::nl)) lt)
+      | TChoice (n,r,lt,t) -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,(LASSeq (LASChoice (ii,r,List.map (aux (n::nl)) lt),aux (n::nl) t)))
+        else LASSeq (LASChoice (ii,r,List.map (aux (n::nl)) lt),aux (n::nl) t)
+      | TNop (n,t) -> aux (n::nl) t
+      | TJoin (n,t) -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,aux (n::nl) t)
+        else aux (n::nl) t
+      | TMerge (n,t) -> 
+        if (List.mem n (check_rec [] tt))
+        then LASRec(ii,x n,aux (n::nl) t)
+        else aux (n::nl) t
   in
   aux [] t
