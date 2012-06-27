@@ -1,0 +1,42 @@
+ocaml-scribble
+==============
+
+Ocaml-scribble is an implementation in Ocaml of the Scribble tools suite.
+See www.scribble.org for more information about Scribble.
+
+- Requirements:
+
+  + make
+  + ocaml version > 3.10
+
+
+- Compilation: 
+
+  make
+
+- Installation:
+  
+  make install
+
+  The installation dir is /usr/local/bin by default. Use the BINDIR variable to
+  specify the installation directory:
+
+  make install BINDIR=~/oscribble/
+  
+
+- Usage:
+
+  + oscribble --help
+
+  + oscribble --parse file.spr
+
+  + oscribble --check file.spr
+
+  + oscribble --project role1 file.spr
+
+ 
+- Layout:
+
+  + A few examples are in ex/
+  + Source files are in src/
+  + Test cases are in test/

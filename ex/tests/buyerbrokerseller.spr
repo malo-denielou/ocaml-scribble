@@ -1,0 +1,24 @@
+import ProductId.xsd as ProductId;
+import Calendar.xsd as Calendar;
+ 
+global protocol BuyerBrokerSeller(role Buyer, role Broker, role Seller) {
+rec START {
+query(ProductID) from Buyer to Broker;
+query(ProductID) from Broker to Seller;
+price(int) from Seller to Broker;
+price(int) from Broker to Buyer;
+choice at Buyer {
+Redo() from Buyer to Broker;
+Redo() from Broker to Seller;
+continue START;
+} or {
+accept() from Buyer to Broker;
+confirm() from Broker to Seller;
+date(Calendar) from Seller to Broker;
+date(Calendar) from Broker to Buyer;
+} or {
+reject() from Buyer to Broker;
+cancel() from Broker to Seller;
+}
+}
+} 

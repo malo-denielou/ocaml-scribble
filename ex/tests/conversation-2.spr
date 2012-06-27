@@ -1,0 +1,20 @@
+import myjavaclass from java as foo;
+import mypythonclass from python;
+global protocol test (client,server) {
+  Request (string) from client to server;
+  Response (int) from server to client;
+  Second_Response (int) from server to client;
+  par {
+    rec loop {
+      Request (string) from client to server;
+      choice at server {
+        Answer (int) from server to client;
+        continue loop;
+        } or {
+        Finish () from server to client;
+        }
+      }
+    } and {
+    Code (int) from server to client;
+    }
+  }

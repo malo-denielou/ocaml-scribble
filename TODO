@@ -1,0 +1,8 @@
+BUGS:
+- Parsing: does not handle parameters yet
+
+WISH
+- try interrupt construct
+- Checking: well-formedness conditions for roles
+- package management system
+- ocaml bindings and API

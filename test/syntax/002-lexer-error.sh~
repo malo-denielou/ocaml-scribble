@@ -1,0 +1,18 @@
+#!/bin/sh
+
+source "../test.sh"
+
+NAME='lexer error'
+PROTOCOL='conversation-2.spr'
+OPTIONS='--parse'
+EXPECTED=1
+
+$TOOL $OPTIONS $PROTOCOL
+if [ "$?" = $EXPECTED ]
+then 
+    echo "[ OK ] $NAME"
+    exit 0
+else 
+    echo "[FAIL] $NAME"
+    exit 1
+fi

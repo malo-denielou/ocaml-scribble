@@ -1,0 +1,28 @@
+//2
+//
+import myjavaclass from java as foo;
+import mypythonclass from python;
+global protocol test (client,server) {
+  Request (string) from client to server;
+  Response (int) from server to client;
+  Forward (int) from server to bank;
+  choice at client {
+    Request (string) from client to server;
+// If removed, breaks local choice:
+    Question (string) from server to bank;
+  } or {
+    Direct (string) from client to bank;
+  }
+  Answer (int) from bank to server;
+  Code (int) from server to client;
+  rec loop {
+// Illegal par in recursion
+    par {
+      Final (int) from client to server;
+    } and {
+      Close (t) from server to client;
+    }
+      continue loop;    
+  }
+}
+
