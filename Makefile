@@ -26,7 +26,7 @@ clean:
 	ocamlbuild -clean
 	rm -f src/version.ml
 	rm -f *~
-	rm -f ocsribble
+	rm -f oscribble
 	rm -f src/*~
 #	rm -f ex/test.tex
 
