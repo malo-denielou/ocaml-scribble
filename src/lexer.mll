@@ -58,12 +58,14 @@ rule token = parse
   | "and"         { AND (info lexbuf) }
   | "as"          { AS (info lexbuf) }
   | "at"          { AT (info lexbuf) }
+  | "by"          { BY (info lexbuf) }
   | "choice"      { CHOICE (info lexbuf) }
   | "continue"    { CONTINUE (info lexbuf) }
   | "from"        { FROM (info lexbuf) }
   | "global"      { GLOBAL (info lexbuf) }
   | "import"      { let extidentifier = importidentifier lexbuf in
                     IMPORT (info lexbuf,extidentifier) }
+  | "interruptible" { INTERRUPTIBLE (info lexbuf) }
   | "local"       { LOCAL (info lexbuf) }
   | "or"          { OR (info lexbuf) }
   | "par"         { PAR (info lexbuf) }
@@ -71,6 +73,7 @@ rule token = parse
   | "rec"         { REC (info lexbuf) }
   | "role"        { ROLE (info lexbuf) }
   | "to"          { TO (info lexbuf) }
+  | "with"        { WITH (info lexbuf) }
   | "//"          { commentline lexbuf; token lexbuf }
   | "="           { EQUAL (info lexbuf) }
   | ";"           { SEMI (info lexbuf) }

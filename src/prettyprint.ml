@@ -85,7 +85,47 @@ let rec print_global_protocol_body (g:as_global_protocol_body) =
         pp_string rec_point;
         pp_string ";";
         pp_close ()
-
+    | GASInterrupt(info,global_protocol,lm) ->
+        pp_vbox 0;
+        pp_hbox ();
+        pp_string "interruptible";
+        pp_space ();
+        pp_string "{";
+        pp_close ();
+        pp_break 2 2;
+        print_global_protocol_body global_protocol;
+        pp_string "}";
+        pp_space ();
+        print_list_interrupt lm;
+        pp_close ();
+        
+and print_list_interrupt = function
+  | [] -> assert false
+  | [role,(message_op,payload)] -> 
+      pp_string "by";
+      pp_space ();
+      pp_string role;
+      pp_space ();
+      pp_string "with";
+      pp_space ();
+      pp_string message_op;
+      pp_space ();
+      pp_string ("("^payload^")");
+      pp_string ";"
+  | (role,(message_op,payload))::q ->
+      pp_string "by";
+      pp_space ();
+      pp_string role;
+      pp_space ();
+      pp_string "with";
+      pp_space ();
+      pp_string message_op;
+      pp_space ();
+      pp_string ("("^payload^")");
+      pp_string ",";
+      pp_break 0 0;
+      print_list_interrupt q
+      
 and print_global_protocol_list sep global_list =
   
   aux_global_protocol_list sep global_list
@@ -178,6 +218,19 @@ let rec print_local_protocol_body (g:as_local_protocol_body) =
         pp_string rec_point;
         pp_string ";";
         pp_close ()
+    | LASInterrupt(info,local_protocol,lm) ->
+        pp_vbox 0;
+        pp_hbox ();
+        pp_string "interruptible";
+        pp_space ();
+        pp_string "{";
+        pp_close ();
+        pp_break 2 2;
+        print_local_protocol_body local_protocol;
+        pp_string "}";
+        pp_space ();
+        print_list_interrupt lm;
+        pp_close ();
 
 and print_local_protocol_list sep local_list =
   
@@ -314,27 +367,27 @@ let print_globaltype (g:globaltype) =
   let rec print_global = function
     | GEnd (n) -> ()
     | GGoto (n) -> 
-      pp_string (Printf.sprintf "continue %d;" n);
-      pp_break 1 0;
+        pp_string (Printf.sprintf "continue %d;" n);
+        pp_break 1 0;
     | GMsg (n,(message_op,payload),role_1,role_2,g) ->
-      pp_string (Printf.sprintf "%d::%s (%s) from %s to %s;"
-                   n message_op payload role_1 role_2);
-      pp_break 1 0;
-      print_global g
+        pp_string (Printf.sprintf "%d::%s (%s) from %s to %s;"
+                     n message_op payload role_1 role_2);
+        pp_break 1 0;
+        print_global g
     | GPar (n, global_list, g) ->
-      pp_vbox 2;
-      pp_string (Printf.sprintf "%d::par {" n);
-      pp_break 1 0;
-      print_global_list "and" global_list;
-      pp_break 1 0;
-      print_global g
+        pp_vbox 2;
+        pp_string (Printf.sprintf "%d::par {" n);
+        pp_break 1 0;
+        print_global_list "and" global_list;
+        pp_break 1 0;
+        print_global g
     | GChoice (n, role, global_list, g) -> 
-      pp_vbox 2;
-      pp_string (Printf.sprintf "%d::choice at %s {" n role);
-      pp_break 1 0;
-      print_global_list "or" global_list;
-      pp_break 1 0;
-      print_global g
+        pp_vbox 2;
+        pp_string (Printf.sprintf "%d::choice at %s {" n role);
+        pp_break 1 0;
+        print_global_list "or" global_list;
+        pp_break 1 0;
+        print_global g
     | GJoin (n,g) -> 
         pp_string (Printf.sprintf "%d::join;" n);
         pp_break 1 0;
@@ -343,19 +396,31 @@ let print_globaltype (g:globaltype) =
         pp_string (Printf.sprintf "%d::merge;" n);
         pp_break 1 0;
         print_global g
+    | GInterrupt (n,g,lm) ->
+        pp_vbox 2;
+        pp_string (Printf.sprintf "%d::interrupt {" n);
+        pp_break 1 0;
+        print_global g;
+        pp_close ();
+        pp_string "}";
+        pp_space ();
+        print_list_interrupt lm;
+        pp_close ();       
+          
+          
   and print_global_list sep = function
     | [] -> assert false
     | [g] -> 
-      print_global g;
-      pp_close ();
-      pp_string "}"
+        print_global g;
+        pp_close ();
+        pp_string "}"
     | g::r -> 
-      print_global g;
-      pp_close ();
-      pp_vbox 0;
-      pp_string (Printf.sprintf "} %s {" sep);
-      pp_break 1 0;
-      print_global_list sep r
+        print_global g;
+        pp_close ();
+        pp_vbox 0;
+        pp_string (Printf.sprintf "} %s {" sep);
+        pp_break 1 0;
+        print_global_list sep r
 
   in
   pp_vbox 0;
@@ -406,6 +471,17 @@ let print_localtype (t:localtype) =
         pp_string (Printf.sprintf "%d::merge;" n);
         pp_break 1 0;
         print_local g
+    | TInterrupt (n,g,lm) ->
+        pp_vbox 2;
+        pp_string (Printf.sprintf "%d::interrupt {" n);
+        pp_break 1 0;
+        print_local g;
+        pp_close ();
+        pp_string "}";
+        pp_space ();
+        print_list_interrupt lm;
+        pp_close ();       
+
   and print_local_list sep = function
     | [] -> assert false
     | [g] -> 

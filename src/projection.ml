@@ -46,6 +46,7 @@ let project role g =
         TChoice (fst k,r,(List.map aux lg),aux g)
     | GJoin (n,g) -> let k = add_node n in TJoin(fst k,aux g)
     | GMerge (n,g) -> let k = add_node n in TMerge(fst k,aux g)
+    | GInterrupt (n,g,lm) -> let k = add_node n in TInterrupt(fst k,aux g,lm)
   in aux g
 
 
@@ -64,6 +65,7 @@ let clean_local_role t =
     | TNop (n,t) -> clean_nop ((re_alias subst n,localnodeof t)::subst) t
     | TJoin (n,t) -> TJoin (re_alias subst n,clean_nop subst t)
     | TMerge (n,t) -> TMerge (re_alias subst n,clean_nop subst t)
+    | TInterrupt (n,t,lm) -> TInterrupt (re_alias subst n,clean_nop subst t,lm)
   in
   let tc = clean_nop [] t in
   let rec aux subst = function
@@ -91,6 +93,7 @@ let clean_local_role t =
     | TNop (n,t) -> assert false (* Should have disappeared by now *)
     | TJoin (n,t) -> TJoin (re_alias subst n,aux subst t)
     | TMerge (n,t) -> TMerge (re_alias subst n,aux subst t)
+    | TInterrupt (n,t,lm) -> TInterrupt (re_alias subst n,aux subst t,lm)
       
   in aux [] tc
       

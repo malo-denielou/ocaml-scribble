@@ -29,6 +29,7 @@ type as_global_protocol_body =
   | GASPar of (info * (as_global_protocol_body list))
   | GASRec of (info * string * as_global_protocol_body)
   | GASCont of (info * string)
+  | GASInterrupt of (info * as_global_protocol_body * ((role_name * message_sig) list))
 
 type as_global =
     string * roles * as_global_protocol_body
@@ -42,6 +43,7 @@ type as_local_protocol_body =
   | LASPar of (info * (as_local_protocol_body list))
   | LASRec of (info * string * as_local_protocol_body)
   | LASCont of info * string
+  | LASInterrupt of (info * as_local_protocol_body * ((role_name * message_sig) list))
 
 type as_local =
     string * roles * as_local_protocol_body

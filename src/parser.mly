@@ -27,8 +27,8 @@
 
 %}
 
-%token <Common.info> AND AS AT CHOICE CONTINUE FROM GLOBAL
-%token <Common.info> LOCAL OR PAR PROTOCOL REC ROLE TO
+%token <Common.info> AND AS AT BY CHOICE CONTINUE FROM INTERRUPTIBLE
+%token <Common.info> GLOBAL LOCAL OR PAR PROTOCOL REC ROLE TO WITH
 %token <Common.info> EOF
 %token <Common.info * string> IDENTIFIER DIGOPERATOR
 %token <Common.info * string> IMPORT
@@ -77,6 +77,7 @@ globalinteractionsequence:
 | parallel globalinteractionsequence    { GASSeq ($1,$2) }
 | recursion globalinteractionsequence   { GASSeq ($1,$2) }
 | continue globalinteractionsequence    { GASSeq ($1,$2) }
+| interrupt globalinteractionsequence   { GASSeq ($1,$2) }
 | globalinteractionblock globalinteractionsequence { GASSeq ($1,$2) }
 |                                       { GASEnd }
 
@@ -116,6 +117,15 @@ continue:
 | CONTINUE IDENTIFIER SEMI
     { GASCont ($1,snd $2) }
 
+interrupt:
+| INTERRUPTIBLE globalinteractionblock interruptlist
+    { GASInterrupt ($1,$2,$3) }
+
+interruptlist:
+| BY rolename WITH messagesignature COMMA interruptlist
+    {(snd $2,snd $4)::$6 }
+| BY rolename WITH messagesignature SEMI
+        { [(snd $2,snd $4)] }
 
 localprotocolbody:
 | localinteractionblock  { $1 }
@@ -130,6 +140,7 @@ localinteractionsequence:
 | lparallel localinteractionsequence    { LASSeq ($1,$2) }
 | lrecursion localinteractionsequence   { LASSeq ($1,$2) }
 | lcontinue localinteractionsequence    { LASSeq ($1,$2) }
+| linterrupt localinteractionsequence    { LASSeq ($1,$2) }
 |                                      { LASEnd }
 
 send:
@@ -165,6 +176,16 @@ lrecursion:
 lcontinue:
 | CONTINUE IDENTIFIER SEMI
     { LASCont ($1,snd $2) }
+
+linterrupt:
+| INTERRUPTIBLE localinteractionblock linterruptlist
+    { LASInterrupt ($1,$2,$3) }
+
+linterruptlist:
+| BY rolename WITH messagesignature COMMA linterruptlist
+    {(snd $2,snd $4)::$6 }
+| BY rolename WITH messagesignature SEMI
+        { [(snd $2,snd $4)] }
 
 
 rolename:

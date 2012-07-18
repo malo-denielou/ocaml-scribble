@@ -27,7 +27,9 @@ let rec index (gg:globaltype) =
       (n,gg)::(index g)
     | GMerge (n,g) -> 
       (n,gg)::(index g)
-
+    | GInterrupt (n,g,lm) -> 
+      (n,gg)::(index g)
+        
 
 
 let nonnulprefix l m =
@@ -60,6 +62,9 @@ let linearity (g:globaltype) =
         get_msg ig (n::seen) (n::jp) g
     | GMerge (n,g) -> 
         get_msg ig (n::seen) (jp) g
+    | GInterrupt (n,g,lm) -> 
+        get_msg ig (n::seen) (jp) g (* Interrupt messages are ignored for
+                                       linearity *)
   in
   
   let rec compat lm = function
@@ -109,6 +114,8 @@ let linearity (g:globaltype) =
         check g
     | GMerge (n,g) -> 
         check g
+    | GInterrupt (n,g,lm) -> 
+        check g
   in
   let result = check g in
   let () = debug_wf ("Linearity: "^(string_of_bool result)) in 
@@ -143,6 +150,9 @@ let local_choice (g:globaltype) =
         get_sender ig (n::seen) rc g
     | GMerge (n,g) -> 
         get_sender ig (n::seen) rc g
+    | GInterrupt (n,g,lm) -> 
+        get_sender ig (n::seen) rc g @ (List.map fst lm)
+          (* The interrupters are considered senders *)
   in
 
   let rec get_receivers ig seen mp rc = function 
@@ -170,6 +180,9 @@ let local_choice (g:globaltype) =
         get_receivers ig (n::seen) mp rc g
     | GMerge (n,g) -> 
         get_receivers ig (n::seen) (n::mp) rc g
+    | GInterrupt (n,g,lm) -> (* interrupt is at top-level, so it does not
+                                make sense to find the exact receivers *)
+        get_receivers ig (n::seen) mp rc g 
   in
 
 
@@ -247,6 +260,8 @@ let local_choice (g:globaltype) =
     | GJoin (n,g) -> 
         check g
     | GMerge (n,g) -> 
+        check g
+    | GInterrupt (n,g,lm) -> 
         check g
   in
   let result = check g in
