@@ -87,9 +87,10 @@ let global_conversion (g:as_global_protocol_body) =
       | GASInterrupt (info,global_protocol,lm) ->
           let n = match next with None -> create_node_name () | Some k -> k
           in
-          let _ = if gend = None then () else 
-            assert false (* no sequential composition after interrupt
-                            block *)
+          let _ = match gend with
+              None | Some (GEnd _) -> ()
+            | _ -> assert false (* no sequential composition after
+                                   interrupt block *)
           in
           GInterrupt (n,muelimination [] (* no recursion variable crosses
                                             interruptible scope *)
