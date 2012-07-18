@@ -102,6 +102,7 @@ let rec print_global_protocol_body (g:as_global_protocol_body) =
 and print_list_interrupt = function
   | [] -> assert false
   | [role,(message_op,payload)] -> 
+      pp_hbox ();
       pp_string "by";
       pp_space ();
       pp_string role;
@@ -111,8 +112,10 @@ and print_list_interrupt = function
       pp_string message_op;
       pp_space ();
       pp_string ("("^payload^")");
-      pp_string ";"
+      pp_string ";";
+      pp_close ();
   | (role,(message_op,payload))::q ->
+      pp_hbox ();
       pp_string "by";
       pp_space ();
       pp_string role;
@@ -123,6 +126,7 @@ and print_list_interrupt = function
       pp_space ();
       pp_string ("("^payload^")");
       pp_string ",";
+      pp_close ();
       pp_break 0 0;
       print_list_interrupt q
       
