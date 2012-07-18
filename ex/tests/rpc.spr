@@ -1,0 +1,8 @@
+global protocol Rpc (role client,role server) {
+
+  interruptible {
+    Request (string) from client to server;
+    Response (int) from server to client;
+  } by client with Timeout() ;
+
+}
