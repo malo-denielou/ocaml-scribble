@@ -78,9 +78,6 @@ let global_conversion (g:as_global_protocol_body) =
           in
           muelimination ((rec_point,n)::nodes) (Some n) gend global_protocol
       | GASCont(info,rec_point) -> 
-          let _ = if gend = None then () else 
-            assert false (* no sequential composition after a continue *)
-          in
           (try 
              GGoto(List.assoc rec_point nodes)
            with 
