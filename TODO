@@ -1,8 +1,10 @@
 BUGS:
 - Parsing: does not handle parameters yet
+- projection of self-sent messages fails
 
 WISH
-- try interrupt construct
+- meaningful error messages for parsing
+- meaningful error messages for well-formedness checking
 - Checking: well-formedness conditions for roles
 - package management system
 - ocaml bindings and API
