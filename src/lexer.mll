@@ -72,6 +72,7 @@ rule token = parse
   | "protocol"    { PROTOCOL (info lexbuf) }
   | "rec"         { REC (info lexbuf) }
   | "role"        { ROLE (info lexbuf) }
+  | "sig"         { SIG (info lexbuf) }
   | "to"          { TO (info lexbuf) }
   | "with"        { WITH (info lexbuf) }
   | "//"          { commentline lexbuf; token lexbuf }

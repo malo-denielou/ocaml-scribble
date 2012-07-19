@@ -21,6 +21,8 @@ type as_role = role_name
 type role = role_name
 type roles = role_name list
 
+type parameters= message_op list
+
 type as_global_protocol_body =
   | GASEnd
   | GASMsg of (info * message_sig * role_name * role_name)
@@ -32,7 +34,7 @@ type as_global_protocol_body =
   | GASInterrupt of (info * as_global_protocol_body * ((role_name * message_sig) list))
 
 type as_global =
-    string * roles * as_global_protocol_body
+    string * parameters * roles * as_global_protocol_body
 
 type as_local_protocol_body =
   | LASEnd
@@ -46,7 +48,7 @@ type as_local_protocol_body =
   | LASInterrupt of (info * as_local_protocol_body * ((role_name * message_sig) list))
 
 type as_local =
-    string * roles * as_local_protocol_body
+    string * parameters * roles * as_local_protocol_body
 
 type as_protocol =
     Localast of as_local

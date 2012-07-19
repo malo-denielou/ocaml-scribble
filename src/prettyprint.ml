@@ -271,43 +271,65 @@ let print_roles roles =
     | r::roles -> pp_string r;pp_string ",";aux roles
   in aux roles
 
+let rec print_params = function
+  | [] -> ()
+  | (op)::q -> 
+    let rec aux = function
+      | [] -> 
+        pp_string ">";
+        pp_space ()
+      | (op)::q -> 
+        pp_string ",";
+        pp_space ();
+        pp_string "sig";
+        pp_space ();
+        pp_string op;
+        aux q
+    in
+    pp_string "<";
+    pp_string "sig";
+    pp_space ();
+    pp_string op;
+    aux q
 
 let print_as_protocol : as_protocol -> unit =
   function
-    | Localast (name,role_list,protocol_body) -> 
-        pp_vbox 0;
-        pp_hbox ();
-        pp_string "local protocol";
-        pp_space ();
-        pp_string name;
-        pp_space ();
-        pp_string "(";
-        print_roles role_list;
-        pp_string ")";
-        pp_space ();
-        pp_close ();
-        pp_string "{";
-        pp_break  2 2;
-        print_local_protocol_body protocol_body;
-        pp_flush ();
-        pp_string "}"
-    | Globalast (name,role_list,protocol_body) -> 
-        pp_vbox 0;
-        pp_hbox ();
-        pp_string "global protocol";
-        pp_space ();
-        pp_string name;
-        pp_space ();
-        pp_string "(";
-        print_roles role_list;
-        pp_string ")";
-        pp_space ();
-        pp_close ();
-        pp_string "{";
-        pp_break  2 2;
-        print_global_protocol_body protocol_body;
-        pp_flush ();
-        pp_string "}"
+    | Localast (name,paramlist,role_list,protocol_body) -> 
+      pp_vbox 0;
+      pp_hbox ();
+      pp_string "local protocol";
+      pp_space ();
+      pp_string name;
+      pp_space ();
+      print_params paramlist;
+      pp_string "(";
+      print_roles role_list;
+      pp_string ")";
+      pp_space ();
+      pp_close ();
+      pp_string "{";
+      pp_break  2 2;
+      print_local_protocol_body protocol_body;
+      pp_flush ();
+      pp_string "}"
+    | Globalast (name,paramlist,role_list,protocol_body) -> 
+      pp_vbox 0;
+      pp_hbox ();
+      pp_string "global protocol";
+      pp_space ();
+      pp_string name;
+      pp_space ();
+      print_params paramlist;
+      pp_string "(";
+      print_roles role_list;
+      pp_string ")";
+      pp_space ();
+      pp_close ();
+      pp_string "{";
+      pp_break  2 2;
+      print_global_protocol_body protocol_body;
+      pp_flush ();
+      pp_string "}"
         
 
 

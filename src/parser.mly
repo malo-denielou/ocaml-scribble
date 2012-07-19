@@ -28,7 +28,7 @@
 %}
 
 %token <Common.info> AND AS AT BY CHOICE CONTINUE FROM INTERRUPTIBLE
-%token <Common.info> GLOBAL LOCAL OR PAR PROTOCOL REC ROLE TO WITH
+%token <Common.info> GLOBAL LOCAL OR PAR PROTOCOL REC ROLE SIG TO WITH
 %token <Common.info> EOF
 %token <Common.info * string> IDENTIFIER DIGOPERATOR
 %token <Common.info * string> IMPORT
@@ -53,10 +53,21 @@ typedecl:
 |                                                    { [] }
 
 protocol:
-| GLOBAL PROTOCOL IDENTIFIER LPA roles RPA globalprotocolbody
-    { Globalast (snd $3,$5,$7) }
-| LOCAL PROTOCOL IDENTIFIER LPA roles RPA localprotocolbody
-    { Localast (snd $3,$5,$7) }
+| GLOBAL PROTOCOL IDENTIFIER parameters LPA roles RPA globalprotocolbody
+    { Globalast (snd $3,$4,$6,$8) }
+| LOCAL PROTOCOL IDENTIFIER parameters LPA roles RPA localprotocolbody
+    { Localast (snd $3,$4,$6,$8) }
+
+parameters:
+| LAB paramlist RAB { $2 }
+| LAB RAB { [] }
+|         { [] }
+
+paramlist:
+| SIG IDENTIFIER COMMA paramlist { (snd $2)::$4 }
+| SIG DIGOPERATOR COMMA paramlist { (snd $2)::$4 }
+| SIG IDENTIFIER  { [snd $2] }
+| SIG DIGOPERATOR  { [snd $2] }
 
 roles:
 | IDENTIFIER COMMA roles { (snd $1)::$3 }
@@ -198,3 +209,4 @@ messagesignature:
 | DIGOPERATOR LPA RPA             { (Common.merge_info (fst $1) $3,(snd $1,"")) }
 | LPA IDENTIFIER RPA              { (Common.merge_info $1 $3,("",snd $2)) }
 | LPA RPA                         { (Common.merge_info $1 $2,("","")) }
+| IDENTIFIER                      { (fst $1,(snd $1,"")) }

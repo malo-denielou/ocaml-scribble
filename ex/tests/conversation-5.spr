@@ -2,7 +2,8 @@
 //
 import myjavaclass from java as foo;
 import mypythonclass from python;
-global protocol test (client,server) {
+global protocol test <sig Request,sig Response> (client,server) {
+  (int) from client to client;
   Request (string) from client to server;
   Response (int) from server to client;
   Forward (int) from server to bank;

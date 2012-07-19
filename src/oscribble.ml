@@ -135,9 +135,9 @@ let main () =
   let () = debug ("Protocol parsed:\n"^(Prettyprint.print_ast sessionast))
   in
   (match sessionast,!action with
-     | (imports,Syntax.Globalast (name,role_list,protocol_body)), Some Parse ->
+     | (imports,Syntax.Globalast (name,params,role_list,protocol_body)), Some Parse ->
          ()
-     | (imports,Syntax.Globalast (name,role_list,protocol_body)), Some Check ->
+     | (imports,Syntax.Globalast (name,params,role_list,protocol_body)), Some Check ->
          let g = Conversation.global_conversion protocol_body in
          let () = fulldebug ("Global type:\n"^(Prettyprint.print_globaltype g))
          in
@@ -145,7 +145,7 @@ let main () =
          let () = debug ("Wellformed: "^(string_of_bool wf))
          in         
          ()
-     | (imports,Syntax.Globalast (name,role_list,protocol_body)), Some (Project role) ->
+     | (imports,Syntax.Globalast (name,params,role_list,protocol_body)), Some (Project role) ->
          let g = Conversation.global_conversion protocol_body in
          let () = fulldebug ("Global type:\n"^(Prettyprint.print_globaltype g))
          in
@@ -158,8 +158,8 @@ let main () =
          let () = fulldebug ("Cleaned Local type:") in
          let t  = Conversation.localnodetoAST tc in
          let () = debug ("Local type:") in
-         (print_string (Prettyprint.print_ast (imports,Syntax.Localast (name,role_list,t))^"\n"))
-     | (imports,Syntax.Localast (name,role_list,protocol_body)), Some Check ->
+         (print_string (Prettyprint.print_ast (imports,Syntax.Localast (name,params,role_list,t))^"\n"))
+     | (imports,Syntax.Localast (name,params,role_list,protocol_body)), Some Check ->
          let t = Conversation.local_conversion protocol_body in
          let () = debug ("Local type:\n"^(Prettyprint.print_localtype t)) in
          ()
