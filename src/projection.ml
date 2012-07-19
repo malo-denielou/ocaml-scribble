@@ -33,6 +33,9 @@ let project role g =
     | GGoto n -> let k = add_node n in TGoto (fst k)
     | GMsg (n,m,s,r,g) -> 
         let k = add_node n in
+        if s = role && r = role
+        then TSend(fst k,m,r,TRecv(fst k,m,s,aux g))
+        else
         if s = role
         then TSend(fst k,m,r,aux g)
         else if r = role
