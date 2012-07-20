@@ -1,0 +1,11 @@
+global protocol SellingRepeatedly(role Seller, role Buyer) {
+   interruptible {
+      rec loop {
+         quote(String quote_content) from Seller to Buyer;
+         continue loop;    
+      }
+   } with {
+      enough() from Buyer,
+      bored(String reason) from {Seller, Buyer};
+   }
+} 
