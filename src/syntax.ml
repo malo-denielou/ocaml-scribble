@@ -14,7 +14,9 @@ type role_name = string
 
 type message_op = string
 
-type message_sig = message_op * string
+type message_payload = ( string * string ) list
+
+type message_sig = message_op * message_payload
 
 type as_role = role_name
 

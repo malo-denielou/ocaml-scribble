@@ -214,10 +214,18 @@ linterruptlist:
 rolename:
 | IDENTIFIER { $1 }
 
+payloadlist:
+| IDENTIFIER COLON IDENTIFIER COMMA payloadlist { (snd $1,snd $3)::$5 }
+| IDENTIFIER IDENTIFIER COMMA payloadlist       { (snd $2,snd $1)::$4 }
+| IDENTIFIER COMMA payloadlist                  { ("",snd $1)::$3 }
+| IDENTIFIER IDENTIFIER                         { [(snd $2,snd $1)] }
+| IDENTIFIER COLON IDENTIFIER                   { [(snd $1,snd $3)] }
+| IDENTIFIER                                    { [("",snd $1)] }
+
 messagesignature:
-| IDENTIFIER LPA IDENTIFIER RPA   { (Common.merge_info (fst $1) $4,(snd $1,snd $3)) }
-| IDENTIFIER LPA RPA              { (Common.merge_info (fst $1) $3,(snd $1,"")) }
-| DIGOPERATOR LPA IDENTIFIER RPA  { (Common.merge_info (fst $1) $4,(snd $1,snd $3)) }
-| DIGOPERATOR LPA RPA             { (Common.merge_info (fst $1) $3,(snd $1,"")) }
-| LPA IDENTIFIER RPA              { (Common.merge_info $1 $3,("",snd $2)) }
-| LPA RPA                         { (Common.merge_info $1 $2,("","")) }
+| IDENTIFIER LPA payloadlist RPA  { (Common.merge_info (fst $1) $4,(snd $1,$3)) }
+| IDENTIFIER LPA RPA              { (Common.merge_info (fst $1) $3,(snd $1,[])) }
+| DIGOPERATOR LPA payloadlist RPA { (Common.merge_info (fst $1) $4,(snd $1,$3)) }
+| DIGOPERATOR LPA RPA             { (Common.merge_info (fst $1) $3,(snd $1,[])) }
+| LPA payloadlist RPA             { (Common.merge_info $1 $3,("",$2)) }
+| LPA RPA                         { (Common.merge_info $1 $2,("",[])) }

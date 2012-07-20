@@ -4,7 +4,7 @@ import Calendar.xsd as Calendar;
 global protocol BuyerBrokerSeller(role Buyer, role Broker, role Seller) {
 rec START {
 query(ProductID) from Buyer to Broker;
-query(ProductID) from Broker to Seller;
+query(ProductID p,BuyerID b) from Broker to Seller;
 price(int) from Seller to Broker;
 price(int) from Broker to Buyer;
 choice at Buyer {

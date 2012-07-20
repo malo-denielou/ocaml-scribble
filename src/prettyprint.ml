@@ -27,14 +27,34 @@ let get_string = flush_str_formatter
 
 open Syntax
 
+let print_message_sig (op,lp) =
+  let rec aux = function
+      [] -> ()
+    | [v,t] -> 
+        pp_string t;
+        pp_space ();
+        pp_string v;
+    | (v,t)::q ->
+        pp_string t;
+        pp_space ();
+        pp_string v;
+        pp_string ",";
+        pp_space ();
+        aux q
+  in
+  pp_string op;
+  pp_space ();
+  pp_string "(";
+  aux lp;
+  pp_string ")"
+  
+
 let rec print_global_protocol_body (g:as_global_protocol_body) =
   match g with
     | GASEnd -> ()
-    | GASMsg(info,(message_op,payload),role_1,role_2) -> 
+    | GASMsg(info,msg_sig,role_1,role_2) -> 
         pp_hbox ();
-        pp_string message_op;
-        pp_space ();
-        pp_string ("("^payload^")");
+        print_message_sig msg_sig;
         pp_space ();
         pp_string "from";
         pp_space ();
@@ -101,7 +121,7 @@ let rec print_global_protocol_body (g:as_global_protocol_body) =
         
 and print_list_interrupt = function
   | [] -> assert false
-  | [role,(message_op,payload)] -> 
+  | [role,msg_sig] -> 
       pp_hbox ();
       pp_string "by";
       pp_space ();
@@ -109,12 +129,10 @@ and print_list_interrupt = function
       pp_space ();
       pp_string "with";
       pp_space ();
-      pp_string message_op;
-      pp_space ();
-      pp_string ("("^payload^")");
+      print_message_sig msg_sig;
       pp_string ";";
       pp_close ();
-  | (role,(message_op,payload))::q ->
+  | (role,msg_sig)::q ->
       pp_hbox ();
       pp_string "by";
       pp_space ();
@@ -122,9 +140,7 @@ and print_list_interrupt = function
       pp_space ();
       pp_string "with";
       pp_space ();
-      pp_string message_op;
-      pp_space ();
-      pp_string ("("^payload^")");
+      print_message_sig msg_sig;
       pp_string ",";
       pp_close ();
       pp_break 0 0;
@@ -160,22 +176,18 @@ and aux_global_protocol_list sep = function
 let rec print_local_protocol_body (g:as_local_protocol_body) =
   match g with
     | LASEnd -> ()
-    | LASSend(info,(message_op,payload),role) -> 
+    | LASSend(info,msg_sig,role) -> 
         pp_hbox ();
-        pp_string message_op;
-        pp_space ();
-        pp_string ("("^payload^")");
+        print_message_sig msg_sig;
         pp_space ();
         pp_string "to";
         pp_space ();
         pp_string role;
         pp_string ";";
         pp_close ()
-    | LASRecv(info,(message_op,payload),role) -> 
+    | LASRecv(info,msg_sig,role) -> 
         pp_hbox ();
-        pp_string message_op;
-        pp_space ();
-        pp_string ("("^payload^")");
+        print_message_sig msg_sig;
         pp_space ();
         pp_string "from";
         pp_space ();
@@ -397,7 +409,13 @@ let print_ast ((imports,as_protocol):ast) =
 
 open Conversation
 
+let rec print_payload = function
+    [] -> ""
+  | [v,t] -> Printf.sprintf "%s %s" t v
+  | (v,t)::q ->Printf.sprintf "%s %s, %s" t v (print_payload q)
+ 
 let print_globaltype (g:globaltype) =
+
 
   let rec print_global = function
     | GEnd (n) -> ()
@@ -406,7 +424,7 @@ let print_globaltype (g:globaltype) =
         pp_break 1 0;
     | GMsg (n,(message_op,payload),role_1,role_2,g) ->
         pp_string (Printf.sprintf "%d::%s (%s) from %s to %s;"
-                     n message_op payload role_1 role_2);
+                     n message_op (print_payload payload) role_1 role_2);
         pp_break 1 0;
         print_global g
     | GPar (n, global_list, g) ->
@@ -472,12 +490,12 @@ let print_localtype (t:localtype) =
       pp_break 1 0;
     | TSend (n,(message_op,payload),role,g) ->
       pp_string (Printf.sprintf "%d::%s (%s) to %s;"
-                   n message_op payload role);
+                   n message_op (print_payload payload) role);
       pp_break 1 0;
       print_local g
     | TRecv (n,(message_op,payload),role,g) ->
       pp_string (Printf.sprintf "%d::%s (%s) from %s;"
-                   n message_op payload role);
+                   n message_op (print_payload payload) role);
       pp_break 1 0;
       print_local g
     | TPar (n, local_list, g) ->
