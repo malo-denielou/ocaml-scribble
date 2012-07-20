@@ -59,11 +59,10 @@ typedecl:
          Some (snd $8))::$10}
 | IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER SEMI typedecl  
       { (snd $1,Some (snd $4,snd $6),None)::$8}
+| IMPORT AS IDENTIFIER SEMI typedecl                 { (snd $1,None,Some (snd $3))::$5}
 | IMPORT SEMI typedecl                               { (snd $1,None,None)::$3 }
 |                                                    { [] }
-/*
-| IMPORT AS IDENTIFIER SEMI typedecl                 { (snd $1,None,Some (snd $3))::$5}
-*/
+
 
 protocol:
 | GLOBAL PROTOCOL IDENTIFIER parameters LPA roles RPA globalprotocolbody
