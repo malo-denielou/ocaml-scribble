@@ -42,12 +42,12 @@ let error lexbuf s =
 }
 
 let blank = [' ' '\t']+
-  let symbol = ['{' '}' '[' ']' '(' ')' ':' '\\' '/' '.' '#' '&' '?' '!'
+  let symbol = ['{' '}' '[' ']' '(' ')' ':' '\\' '/' '#' '&' '?' '!'
                   '\'' '\"']
-let identifier = [ 'a' - 'z' 'A' - 'Z' '_' ] ['a' - 'z' 'A' - 'Z' '0' - '9' '_']*
+let identifier = [ 'a' - 'z' 'A' - 'Z' '_' ] ['a' - 'z' 'A' - 'Z' '0' - '9' '_' '.']*
 let extidentifier = 
   ( symbol | [ 'a' - 'z' 'A' - 'Z' '_'] ) (symbol | ['a' - 'z' 'A' - 'Z' '0' - '9' '_'])*
-let digoperator = [ '0' - '9'] ['a' - 'z' 'A' - 'Z' '0' - '9' '_']*
+let digoperator = [ '0' - '9'] ['a' - 'z' 'A' - 'Z' '0' - '9' '_' '.']*
 
 let anything = [ ^ '\n']
 
