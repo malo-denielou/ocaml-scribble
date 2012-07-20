@@ -28,7 +28,8 @@
 %}
 
 %token <Common.info> AND AS AT BY CHOICE CONTINUE FROM INTERRUPTIBLE
-%token <Common.info> GLOBAL LOCAL OR PAR PROTOCOL REC ROLE SIG TO WITH
+%token <Common.info> GLOBAL LOCAL OR PACKAGE PAR 
+%token <Common.info> PROTOCOL REC ROLE SIG TO WITH
 %token <Common.info> EOF
 %token <Common.info * string> IDENTIFIER DIGOPERATOR
 %token <Common.info * string> IMPORT
@@ -41,16 +42,28 @@
 %%
 
 scribbleprotocol:
-| typedecl protocol { ($1,$2)}
+| package typedecl protocol { ($2,$3)}
+| typedecl protocol         { ($1,$2)}
+
+package:
+| PACKAGE IDENTIFIER SEMI { () }
 
 typedecl:
 | IMPORT FROM IDENTIFIER AS IDENTIFIER SEMI typedecl { (snd $1,
-                                                        Some (snd $3),
+                                                        Some ("",snd $3),
                                                         Some (snd $5))::$7}
-| IMPORT FROM IDENTIFIER SEMI typedecl               { (snd $1,Some (snd $3),None)::$5}
-| IMPORT AS IDENTIFIER SEMI typedecl                 { (snd $1,None,Some (snd $3))::$5}
+| IMPORT FROM IDENTIFIER SEMI typedecl               { (snd $1,Some ("",snd $3),None)::$5}
+| IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER AS IDENTIFIER SEMI typedecl 
+      { (snd $1,
+         Some (snd $4,snd $6),
+         Some (snd $8))::$10}
+| IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER SEMI typedecl  
+      { (snd $1,Some (snd $4,snd $6),None)::$8}
 | IMPORT SEMI typedecl                               { (snd $1,None,None)::$3 }
 |                                                    { [] }
+/*
+| IMPORT AS IDENTIFIER SEMI typedecl                 { (snd $1,None,Some (snd $3))::$5}
+*/
 
 protocol:
 | GLOBAL PROTOCOL IDENTIFIER parameters LPA roles RPA globalprotocolbody
@@ -209,4 +222,3 @@ messagesignature:
 | DIGOPERATOR LPA RPA             { (Common.merge_info (fst $1) $3,(snd $1,"")) }
 | LPA IDENTIFIER RPA              { (Common.merge_info $1 $3,("",snd $2)) }
 | LPA RPA                         { (Common.merge_info $1 $2,("","")) }
-| IDENTIFIER                      { (fst $1,(snd $1,"")) }

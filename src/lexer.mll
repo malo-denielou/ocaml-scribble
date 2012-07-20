@@ -69,6 +69,7 @@ rule token = parse
   | "local"       { LOCAL (info lexbuf) }
   | "or"          { OR (info lexbuf) }
   | "par"         { PAR (info lexbuf) }
+  | "package"     { PACKAGE (info lexbuf) }
   | "protocol"    { PROTOCOL (info lexbuf) }
   | "rec"         { REC (info lexbuf) }
   | "role"        { ROLE (info lexbuf) }

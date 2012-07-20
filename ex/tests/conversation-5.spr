@@ -1,6 +1,7 @@
+package test;
 //2
 //
-import myjavaclass from java as foo;
+import myjavaclass from <java> myclass as foo;
 import mypythonclass from python;
 global protocol test <sig Request,sig Response> (client,server) {
   (int) from client to client;

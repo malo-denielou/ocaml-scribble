@@ -55,7 +55,7 @@ type as_protocol =
   | Globalast of as_global
 
 type as_import =
-    (string * (string option) * (string option)) list
+    (string * ((string * string) option) * (string option)) list
 
 type ast =
     as_import * as_protocol

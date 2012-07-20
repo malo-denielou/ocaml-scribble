@@ -343,9 +343,18 @@ let print_imports imp =
     pp_string extid;
     (match from_opt with
          None -> ()
-       | Some id_from ->
+       | Some ("",id_from) ->
            pp_space ();
            pp_string "from";
+           pp_space ();
+           pp_string id_from
+       | Some (ty,id_from) ->
+           pp_space ();
+           pp_string "from";
+           pp_space ();
+           pp_string "<";
+           pp_string ty;
+           pp_string ">";
            pp_space ();
            pp_string id_from);
     (match as_opt with
