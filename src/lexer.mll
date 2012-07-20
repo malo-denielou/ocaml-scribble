@@ -65,6 +65,8 @@ rule token = parse
   | "global"      { GLOBAL (info lexbuf) }
   | "import"      { let extidentifier = importidentifier lexbuf in
                     IMPORT (info lexbuf,extidentifier) }
+  | "include"     { let extidentifier = importidentifier lexbuf in
+                    IMPORT (info lexbuf,extidentifier) }
   | "interruptible" { INTERRUPTIBLE (info lexbuf) }
   | "local"       { LOCAL (info lexbuf) }
   | "or"          { OR (info lexbuf) }
