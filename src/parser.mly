@@ -108,9 +108,6 @@ message:
 | messagesignature FROM rolename TO rolename SEMI 
     { let (info,(op,payload)) = $1 in
       GASMsg (Common.merge_info info $6, (op,payload), snd $3, snd $5) }
-| messagesignature
-        { let (info,(op,payload)) = $1 in
-          error "Wrong declaration of a message exchange" info }
 
 choice:
 | CHOICE AT rolename globalinteractionblock listglobalinteractionblockor
@@ -229,3 +226,4 @@ messagesignature:
 | DIGOPERATOR LPA RPA             { (Common.merge_info (fst $1) $3,(snd $1,[])) }
 | LPA payloadlist RPA             { (Common.merge_info $1 $3,("",$2)) }
 | LPA RPA                         { (Common.merge_info $1 $2,("",[])) }
+| IDENTIFIER                      { (fst $1,(snd $1,[])) }
