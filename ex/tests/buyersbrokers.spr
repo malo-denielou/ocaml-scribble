@@ -1,0 +1,10 @@
+global protocol BuyersBrokers(role Buyer1, role Buyer2, role Seller1, 
+            role Seller2) {
+   par {
+      quote(String product, Int price) from Seller1 to Buyer1;
+      purchase(String product) from Buyer1 to Seller1;
+   } and {
+      quote(String product, Int price) from Seller2 to Buyer2;
+      purchase(String product) from Buyer2 to Seller2;
+   }
+}
