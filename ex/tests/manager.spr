@@ -1,0 +1,18 @@
+import ack from <ysd> common.yml;
+import send_event from <ysd> notification_service.yml;
+import userRequest from <ysd> resource_registry.yml;
+import status from <ysd> resource_registry.yml;
+import update from <ysd> resource_registry.yml;
+ 
+global protocol ManagerEnrollmentDecision<sig X, sig Y>
+ (role User, role Manager, role Gateway, role OrgSrv, role ResReg,
+  role NotificationSrv) {
+  X(origId:int, requestId:int) from Manager to Gateway;
+  X(origId:int, requestId:int) from Gateway to OrgSrv;
+  update(userRequest, status) from Gateway to ResReg;
+  ack() from ResReg to Gateway;
+  send_event(string) from OrgSrv to NotificationSrv;
+  ack() from ResReg to Gateway;
+  ack() from Gateway to Manager;
+  Y(requestId:int) from NotificationSrv to User;
+}

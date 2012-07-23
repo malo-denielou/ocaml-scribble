@@ -1,0 +1,22 @@
+import accept from <ysd> service_request.yml;
+import failure from <ysd> service_request.yml;
+import timeout from <ysd> service_request.yml;
+import cancel from <ysd> service_request.yml;
+ 
+global protocol ServiceRequest<sig request, sig inform_result> 
+(role Requester, role Provider) {
+  interruptible {
+    request from Requester to Provider;
+    choice at Provider {
+      accept() from Requester to Provider;
+      choice at Provider {
+        inform_result() from Provider to Requester;
+      } or {
+        failure() from Provider to Requester;
+      }
+    } or {
+      reject() from Requester to Provider;
+    }
+  } by Requester with timeout(),
+    by Requester with cancel();
+}
