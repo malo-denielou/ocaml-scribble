@@ -23,8 +23,10 @@ type action =
   | Project of string
  
 let command_flag = ref true
-let scribble_file = ref None
+let scribble_file = ref []
 let action = ref None
+let protocol_flag = ref true
+let protocol = ref None
 
 
 let speclist = Arg.align
@@ -70,6 +72,12 @@ let speclist = Arg.align
                           "only one action is allowed");
                      exit 1)),
      " followed by ROLE, projects a Scribble FILE to a given ROLE");
+    ("--protocol",
+     Arg.String (fun s -> 
+                   if !protocol_flag 
+                   then (protocol_flag := false;
+                         protocol := Some s)),
+     " followed by NAME, specifies which protocol the action refers to");
   ]
  
 
@@ -81,89 +89,107 @@ let rec parse_until_end chan accum =
       (parse_until_end chan (accum^(String.make 1 s)))
   with End_of_file -> accum
 
+(* Parse the files entered as arguments *)
+let parse_files file_list =
+  List.map 
+    (function file ->
+      let chan = open_in file in
+      let raw_scribble = parse_until_end chan "" in
+      fulldebug ("File "^file^" reads: \n"^raw_scribble) ;
+      debug "Compilation starting" ;
+      let lexbuf = Lexing.from_string raw_scribble in
+      debug "Lexer built" ;
+      let sessionast =
+        (try 
+           Parser.scribbleprotocol Lexer.token lexbuf
+         with
+             Common.Syntax_error (s,i) ->
+	       (prerr_string ("Syntax error: "^s^" "^(Common.info_to_string i)^"\n");
+                exit 1)
+           | Common.Parse_error (s,i)  ->
+	     (prerr_string ("Parsing error: "^s^" "^(Common.info_to_string i)^"\n"); 
+              exit 2)
+        ) in
+      let () = close_in chan in
+      let () = debug ("Protocols from file "^file^" parsed:\n"^(Prettyprint.print_ast sessionast))
+      in
+      (file,sessionast)
+    )
+    file_list
 
+
+
+(* Main procedure *)
 let main () =
+  let () = debug "Starting oscribble" in
   Arg.parse
     speclist
     (fun s -> if !command_flag 
-                then (
-                  prerr_string 
-                    (Printf.sprintf 
-                       "One action should be specified");
-                  exit 1)
-                else (
-                  if !scribble_file = None
-                  then scribble_file := Some s
-                  else (prerr_string 
-                          (Printf.sprintf 
-                             "Only one Scribble file is supported");
-                        exit 1)
-                )
-(*
-(prerr_string 
-                 (Printf.sprintf 
-                    "additional arguments are not allowed\n");
-               exit 1)
-*)
+      then (
+        prerr_string 
+          (Printf.sprintf 
+             "One action should be specified");
+        exit 1)
+      else (scribble_file := s:: (!scribble_file)
+      )
     )
     msg_usage;
-  let () = debug "Starting oscribble" in
-  let file = match !scribble_file with
-    | None -> (prerr_string 
-                 (Printf.sprintf 
-                    "No scribble file is present as argument\n");
-               exit 1)
-    | Some file -> file in
-  let chan = open_in file in
-  let raw_scribble = parse_until_end chan "" in
-  fulldebug ("Session read: \n"^raw_scribble) ;
-  debug "Compilation starting" ;
-  let lexbuf = Lexing.from_string raw_scribble in
-  debug "Lexer built" ;
-  let sessionast =
-    (try 
-       Parser.scribbleprotocol Lexer.token lexbuf
-     with
-         Common.Syntax_error (s,i) ->
-	   (prerr_string ("Syntax error: "^s^" "^(Common.info_to_string i)^"\n");
-            exit 1)
-       | Common.Parse_error (s,i)  ->
-	   (prerr_string ("Parsing error: "^s^" "^(Common.info_to_string i)^"\n"); 
-            exit 2)
-    ) in
-  let () = close_in chan in
+  let file_list = match !scribble_file with
+    | [] -> (prerr_string 
+               (Printf.sprintf 
+                  "No scribble file is present as argument\n");
+             exit 1)
+    | fl -> fl in
+  let sessionast_list = parse_files file_list in
+  let sessionast = (snd (List.hd sessionast_list)) in
   let () = debug ("Protocol parsed:\n"^(Prettyprint.print_ast sessionast))
   in
-  (match sessionast,!action with
-     | (imports,Syntax.Globalast (name,params,role_list,protocol_body)), Some Parse ->
-         ()
-     | (imports,Syntax.Globalast (name,params,role_list,protocol_body)), Some Check ->
-         let g = Conversation.global_conversion protocol_body in
-         let () = fulldebug ("Global type:\n"^(Prettyprint.print_globaltype g))
-         in
-         let wf = Wellformedness.check g in
-         let () = debug ("Wellformed: "^(string_of_bool wf))
-         in         
-         ()
-     | (imports,Syntax.Globalast (name,params,role_list,protocol_body)), Some (Project role) ->
-         let g = Conversation.global_conversion protocol_body in
-         let () = fulldebug ("Global type:\n"^(Prettyprint.print_globaltype g))
-         in
-         let wf = Wellformedness.check g in
-         let () = debug ("Wellformed: "^(string_of_bool wf))
-         in
-         let tr = Projection.project role g in
-         let () = fulldebug ("Raw local type:\n"^(Prettyprint.print_localtype tr)) in
-         let tc = Projection.clean_local_role tr in
-         let () = fulldebug ("Cleaned Local type:") in
-         let t  = Conversation.localnodetoAST tc in
-         let () = debug ("Local type:") in
-         (print_string (Prettyprint.print_ast (imports,Syntax.Localast (name,params,role_list,t))^"\n"))
-     | (imports,Syntax.Localast (name,params,role_list,protocol_body)), Some Check ->
-         let t = Conversation.local_conversion protocol_body in
-         let () = debug ("Local type:\n"^(Prettyprint.print_localtype t)) in
-         ()
-     | _ -> ()
+  let (imports,protocols) = match sessionast with Syntax.FileAS (im,pr) -> (im,pr)
+  in
+  let ast = match !protocol with
+      None -> List.hd (List.rev protocols)
+    | Some n -> (
+      try (
+        List.find (function x -> match x with
+          | Syntax.Globalast (name,params,role_list,protocol_body)-> name=n
+          | Syntax.Localast (name,params,role_list,protocol_body)-> name=n)
+          protocols
+      ) with Not_found -> 
+        (prerr_string ("No protocol named "^n^" has been found.\n");
+         exit 1)) 
+  in
+  (match ast,!action with
+    | (ast), Some Parse ->
+      (*      Syntax.Globalast (name,params,role_list,protocol_body)) *)
+      ()
+    | (Syntax.Globalast (name,params,role_list,protocol_body)), Some Check ->
+      let g = Conversation.global_conversion protocol_body in
+      let () = fulldebug ("Global type:\n"^(Prettyprint.print_globaltype g))
+      in
+      let wf = Wellformedness.check g in
+      let () = debug ("Wellformed: "^(string_of_bool wf))
+      in         
+      ()
+    | (Syntax.Globalast (name,params,role_list,protocol_body)), Some (Project role) ->
+      let g = Conversation.global_conversion protocol_body in
+      let () = fulldebug ("Global type:\n"^(Prettyprint.print_globaltype g))
+      in
+      let wf = Wellformedness.check g in
+      let () = debug ("Wellformed: "^(string_of_bool wf))
+      in
+      let tr = Projection.project role g in
+      let () = fulldebug ("Raw local type:\n"^(Prettyprint.print_localtype tr)) in
+      let tc = Projection.clean_local_role tr in
+      let () = fulldebug ("Cleaned Local type:") in
+      let t  = Conversation.localnodetoAST tc in
+      let () = debug ("Local type:") in
+      (print_string (Prettyprint.print_ast 
+                       (Syntax.FileAS ([],[Syntax.Localast (name,params,role_list,t)]))^"\n"))
+    | (Syntax.Localast (name,params,role_list,protocol_body)), Some Check ->
+      let t = Conversation.local_conversion protocol_body in
+      let () = debug ("Local type:\n"^(Prettyprint.print_localtype t)) in
+      ()
+    | _ -> ()
   );     
   let () = debug "Closing oscribble" in
   ()

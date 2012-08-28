@@ -42,8 +42,8 @@
 %%
 
 scribbleprotocol:
-| package typedecl protocol { ($2,$3)}
-| typedecl protocol         { ($1,$2)}
+| package typedecl protocol { FileAS($2,[$3])}
+| typedecl protocol         { FileAS($1,[$2])}
 
 package:
 | PACKAGE IDENTIFIER SEMI { () }

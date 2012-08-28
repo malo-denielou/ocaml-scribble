@@ -395,11 +395,12 @@ let print_imports imp =
         
         
 
-let print_ast ((imports,as_protocol):ast) =
+let print_ast : ast -> string = function FileAS (imports,protocols) ->
   pp_vbox 0;
   print_imports imports;
-  pp_break 0 0;
-  print_as_protocol as_protocol;
+  List.iter (fun x -> 
+    pp_break 0 0;
+    print_as_protocol x) protocols;
   get_string ()
       
 
