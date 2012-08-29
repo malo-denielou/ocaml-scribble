@@ -36,14 +36,19 @@
 %token <Common.info> SEMI EQUAL COLON COMMA
 %token <Common.info> LPA RPA LCB RCB LAB RAB
 
-%start scribbleprotocol
-%type <Syntax.ast> scribbleprotocol
+%start scribblefile
+%type <Syntax.ast> scribblefile
 
 %%
 
-scribbleprotocol:
-| package typedecl protocol { FileAS($2,[$3])}
-| typedecl protocol         { FileAS($1,[$2])}
+scribblefile:
+ | scribblefilecontent { FileAS (fst $1, snd $1) }
+
+scribblefilecontent:
+ | package scribblefilecontent    { (fst $2,snd $2) }
+ | typedecl scribblefilecontent   { ($1@(fst $2),snd $2) }
+ | protocol scribblefilecontent   { (fst $2,$1::(snd $2)) }
+ |                                { ([],[]) }
 
 package:
 | PACKAGE IDENTIFIER SEMI { () }

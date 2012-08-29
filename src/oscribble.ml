@@ -12,10 +12,12 @@ let version=
 let debug = Common.debug "Main"
 let fulldebug = Common.fulldebug "Main"
 
+
+(* Command line arguments *)
+
 let msg_usage = 
   "Usage: oscribble [OPTIONS] FILE\n"^
     "Processes the Scribble FILE(s) according to the OPTIONS."
-
 
 type action = 
   | Parse
@@ -80,6 +82,7 @@ let speclist = Arg.align
      " followed by NAME, specifies which protocol the action refers to");
   ]
  
+(* File reading and parsing *)
 
 let rec parse_until_end chan accum = 
   try 
@@ -101,7 +104,7 @@ let parse_files file_list =
       debug "Lexer built" ;
       let sessionast =
         (try 
-           Parser.scribbleprotocol Lexer.token lexbuf
+           Parser.scribblefile Lexer.token lexbuf
          with
              Common.Syntax_error (s,i) ->
 	       (prerr_string ("Syntax error: "^s^" "^(Common.info_to_string i)^"\n");
@@ -120,6 +123,7 @@ let parse_files file_list =
 
 
 (* Main procedure *)
+
 let main () =
   let () = debug "Starting oscribble" in
   Arg.parse
