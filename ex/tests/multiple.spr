@@ -1,0 +1,32 @@
+import myjavaclass from java as foo;
+import mypythonclass from python;
+
+global protocol Rpc (role client,role server) {
+
+  interruptible {
+    Request (string) from client to server;
+    Response (int) from server to client;
+  } by client with Timeout() ,
+    by server with Invalid() ;
+
+}
+
+
+global protocol test (buyer,seller) {
+  Request (string) from buyer to seller;
+  Response (int) from seller to buyer;
+  Second_Response (int) from seller to buyer;
+  par {
+    rec loop {
+      Request (string) from buyer to seller;
+      choice at seller {
+        Answer (int) from seller to buyer;
+        continue loop;
+        } or {
+        Finish () from seller to buyer;
+        }
+      }
+    } and {
+    Code (int) from seller to buyer;
+    }
+  }

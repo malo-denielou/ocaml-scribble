@@ -306,12 +306,16 @@ let rec print_params = function
 
 let print_as_protocol : as_protocol -> unit =
   function
-    | Localast (name,paramlist,role_list,protocol_body) -> 
+    | Localast (name,role,paramlist,role_list,protocol_body) -> 
       pp_vbox 0;
       pp_hbox ();
       pp_string "local protocol";
       pp_space ();
       pp_string name;
+      pp_space ();
+      pp_string "at";
+      pp_space ();
+      pp_string role;
       pp_space ();
       print_params paramlist;
       pp_string "(";

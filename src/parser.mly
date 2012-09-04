@@ -54,26 +54,25 @@ package:
 | PACKAGE IDENTIFIER SEMI { () }
 
 typedecl:
-| IMPORT FROM IDENTIFIER AS IDENTIFIER SEMI typedecl { (snd $1,
+| IMPORT FROM IDENTIFIER AS IDENTIFIER SEMI { (snd $1,
                                                         Some ("",snd $3),
-                                                        Some (snd $5))::$7}
-| IMPORT FROM IDENTIFIER SEMI typedecl               { (snd $1,Some ("",snd $3),None)::$5}
-| IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER AS IDENTIFIER SEMI typedecl 
+                                                        Some (snd $5))::[]}
+| IMPORT FROM IDENTIFIER SEMI               { (snd $1,Some ("",snd $3),None)::[]}
+| IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER AS IDENTIFIER SEMI 
       { (snd $1,
          Some (snd $4,snd $6),
-         Some (snd $8))::$10}
-| IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER SEMI typedecl  
-      { (snd $1,Some (snd $4,snd $6),None)::$8}
-| IMPORT AS IDENTIFIER SEMI typedecl                 { (snd $1,None,Some (snd $3))::$5}
-| IMPORT SEMI typedecl                               { (snd $1,None,None)::$3 }
-|                                                    { [] }
+         Some (snd $8))::[]}
+| IMPORT FROM LAB IDENTIFIER RAB IDENTIFIER SEMI  
+      { (snd $1,Some (snd $4,snd $6),None)::[]}
+| IMPORT AS IDENTIFIER SEMI                 { (snd $1,None,Some (snd $3))::[]}
+| IMPORT SEMI                               { (snd $1,None,None)::[] }
 
 
 protocol:
 | GLOBAL PROTOCOL IDENTIFIER parameters LPA roles RPA globalprotocolbody
     { Globalast (snd $3,$4,$6,$8) }
-| LOCAL PROTOCOL IDENTIFIER parameters LPA roles RPA localprotocolbody
-    { Localast (snd $3,$4,$6,$8) }
+| LOCAL PROTOCOL IDENTIFIER AT IDENTIFIER parameters LPA roles RPA localprotocolbody
+    { Localast (snd $3,snd $5,$6,$8,$10) }
 
 parameters:
 | LAB paramlist RAB { $2 }

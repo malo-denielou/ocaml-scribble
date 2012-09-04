@@ -50,7 +50,7 @@ type as_local_protocol_body =
   | LASInterrupt of (info * as_local_protocol_body * ((role_name * message_sig) list))
 
 type as_local =
-    string * parameters * roles * as_local_protocol_body
+    string * role_name * parameters * roles * as_local_protocol_body
 
 type as_protocol =
     Localast of as_local
